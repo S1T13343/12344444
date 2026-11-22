@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Role } from '../api';
 import { useApp } from '../context';
+import { AUTH_PHOTO } from '../photos';
 
 export default function AuthPage() {
   const [params] = useSearchParams();
@@ -35,7 +36,10 @@ export default function AuthPage() {
 
   return (
     <div className="auth">
-      <div className="auth-side">
+      <div
+        className="auth-side"
+        style={{ backgroundImage: `linear-gradient(160deg, rgba(15,76,92,.9), rgba(22,105,122,.6)), url(${AUTH_PHOTO})` }}
+      >
         <h2>StayBook</h2>
         <p>Бронюйте невеликі готелі напряму. Отримуйте 5% бонусних балів з кожного бронювання.</p>
       </div>

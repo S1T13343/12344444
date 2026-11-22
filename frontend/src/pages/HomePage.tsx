@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, qs, SearchHotel } from '../api';
 import { defaultSearch, HotelCard, SearchBar } from '../components';
+import { cityPhoto, HERO_PHOTO } from '../photos';
 
 interface SearchRes {
   nights: number;
@@ -25,7 +26,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="hero">
+      <section className="hero" style={{ backgroundImage: `linear-gradient(100deg, rgba(10,45,55,.88) 0%, rgba(10,45,55,.55) 55%, rgba(10,45,55,.25) 100%), url(${HERO_PHOTO})` }}>
         <div className="container">
           <h1>Знайдіть місце, до якого хочеться повертатися</h1>
           <p>Невеликі готелі та хостели України — напряму, без зайвих комісій.</p>
@@ -41,7 +42,9 @@ export default function HomePage() {
               key={c.city}
               to={`/search?${qs({ city: c.city, checkIn: d.checkIn, checkOut: d.checkOut, guests: 2 })}`}
               className="city-tile"
-              style={{ background: `linear-gradient(135deg, hsl(${(i * 47 + 190) % 360} 50% 30%), hsl(${(i * 47 + 230) % 360} 55% 50%))` }}
+              style={{
+                backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,.65) 100%), url(${cityPhoto(c.city, i)}), linear-gradient(135deg, hsl(${(i * 47 + 190) % 360} 50% 30%), hsl(${(i * 47 + 230) % 360} 55% 50%))`,
+              }}
             >
               <b>{c.city}</b>
               <span>

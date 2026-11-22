@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, Booking, fmtDate, Hotel, money, Room, ROOM_TYPES, RoomType, STATUS } from '../api';
-import { Empty, Spinner, Stars } from '../components';
+import { Empty, HotelPhoto, Spinner, Stars } from '../components';
 import { useApp } from '../context';
 
 interface Stats {
@@ -34,7 +34,7 @@ export function BarChart({ data }: { data: { label: string; value: number }[] })
   );
 }
 
-const emptyHotel = { name: '', city: '', address: '', description: '', stars: 3, lat: 50.45, lng: 30.52, amenities: 'Wi-Fi, Сніданок' };
+const emptyHotel = { name: '', city: '', address: '', description: '', stars: 3, lat: 50.45, lng: 30.52, amenities: 'Wi-Fi, Сніданок', photos: '' };
 const emptyRoom = { roomNumber: '', type: 'STANDARD' as RoomType, capacity: 2, pricePerNight: 1500 };
 
 /** Кабінет власника (Партнер) */
@@ -57,8 +57,15 @@ export default function OwnerPage() {
   const saveHotel = async (e: FormEvent) => {
     e.preventDefault();
     if (!hotelForm) return;
-    const { id, amenities, ...rest } = hotelForm;
-    const body = { ...rest, stars: Number(rest.stars), lat: Number(rest.lat), lng: Number(rest.lng), amenities: amenities.split(',').map((s) => s.trim()).filter(Boolean) };
+    const { id, amenities, photos, ...rest } = hotelForm;
+    const body = {
+      ...rest,
+      stars: Number(rest.stars),
+      lat: Number(rest.lat),
+      lng: Number(rest.lng),
+      amenities: amenities.split(',').map((s) => s.trim()).filter(Boolean),
+      photos: photos.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean),
+    };
     try {
       await api(id ? `/partner/hotels/${id}` : '/partner/hotels', { method: id ? 'PATCH' : 'POST', body });
       toast(id ? 'Готель оновлено' : 'Готель додано');
@@ -145,6 +152,10 @@ export default function OwnerPage() {
                 </div>
                 <label>Опис<textarea rows={3} value={hotelForm.description} onChange={(e) => setHotelForm({ ...hotelForm, description: e.target.value })} /></label>
                 <label>Зручності (через кому)<input value={hotelForm.amenities} onChange={(e) => setHotelForm({ ...hotelForm, amenities: e.target.value })} /></label>
+                <label>
+                  Фото — посилання https://, кожне з нового рядка (перше стане обкладинкою)
+                  <textarea rows={3} placeholder="https://…/photo1.jpg" value={hotelForm.photos} onChange={(e) => setHotelForm({ ...hotelForm, photos: e.target.value })} />
+                </label>
                 <div className="actions">
                   <button className="btn primary">Зберегти</button>
                   <button type="button" className="btn ghost" onClick={() => setHotelForm(null)}>Скасувати</button>
@@ -155,14 +166,17 @@ export default function OwnerPage() {
             {hotels.map((h) => (
               <div key={h.id} className="card">
                 <div className="section-head">
-                  <div>
+                  <div className="owner-hotel-head">
+                    <HotelPhoto h={h} w={200} className="owner-thumb" />
+                    <div>
                     <h3>
                       <Link to={`/hotels/${h.id}`}>{h.name}</Link> <Stars n={h.stars} />
                     </h3>
                     <div className="small muted">{h.city}, {h.address} {!h.isActive && <span className="badge bad">вимкнено адміністратором</span>}</div>
+                    </div>
                   </div>
                   <div className="actions">
-                    <button className="btn ghost sm" onClick={() => setHotelForm({ id: h.id, name: h.name, city: h.city, address: h.address, description: h.description, stars: h.stars, lat: h.lat, lng: h.lng, amenities: (h.amenities ?? []).join(', ') })}>Редагувати</button>
+                    <button className="btn ghost sm" onClick={() => setHotelForm({ id: h.id, name: h.name, city: h.city, address: h.address, description: h.description, stars: h.stars, lat: h.lat, lng: h.lng, amenities: (h.amenities ?? []).join(', '), photos: (h.photos ?? []).join('\n') })}>Редагувати</button>
                     <button className="btn primary sm" onClick={() => setRoomForm({ hotelId: h.id, ...emptyRoom })}>+ Номер</button>
                   </div>
                 </div>

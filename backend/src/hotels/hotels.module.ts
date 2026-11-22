@@ -24,6 +24,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
   Max,
   Min,
   MinLength,
@@ -57,6 +58,7 @@ class HotelDto {
   @Type(() => Number) @IsNumber() lat!: number;
   @Type(() => Number) @IsNumber() lng!: number;
   @IsOptional() @IsArray() amenities?: string[];
+  @IsOptional() @IsArray() @IsUrl({ protocols: ['https'] }, { each: true }) photos?: string[];
 }
 
 class RoomDto {
@@ -200,6 +202,7 @@ export class HotelsService {
         ...dto,
         description: dto.description ?? '',
         amenities: dto.amenities ?? [],
+        photos: dto.photos ?? [],
         ownerId: user.id,
         hue: Math.floor(Math.random() * 360),
       }),

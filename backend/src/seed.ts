@@ -98,10 +98,36 @@ const HOTELS: Array<{
   },
 ];
 
+/** Фото Unsplash (безкоштовна ліцензія Unsplash) */
+const ph = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=70`;
+
+/** Фото демо-готелів у тому ж порядку, що й HOTELS. Перше — обкладинка */
+const SEED_PHOTOS: string[][] = [
+  ['1590381105924-c72589b9ef3f', '1618773928121-c32242e63f39', '1631049307264-da0ec9d70304', '1584132915807-fd1f5fbc078f'],
+  ['1555854877-bab0e564b8d5', '1520277739336-7bf67edfa768', '1502672260266-1c1ef2d93688', '1574362848149-11496d93a7c7'],
+  ['1517840901100-8179e982acb7', '1568084680786-a84f91d1153c', '1582719478250-c89cae4dc85b', '1595576508898-0ad5c879a061'],
+  ['1514924013411-cbf25faa35bb', '1611892440504-42a792e24d32', '1601565415267-724db0e9fbdf', '1505693416388-ac5ce068fe85'],
+  ['1520277739336-7bf67edfa768', '1555854877-bab0e564b8d5', '1502672260266-1c1ef2d93688', '1578683010236-d716f9a3f461'],
+  ['1564501049412-61c2a3083791', '1596394516093-501ba68a0ba6', '1584132967334-10e028bd69f7', '1590490360182-c33d57733427'],
+  ['1586611292717-f828b167408c', '1540541338287-41700207dee6', '1596436889106-be35e843f974', '1559599238-308793637427'],
+  ['1595521624992-48a59aef95e3', '1601918774946-25832a4be0d6', '1506905925346-21bda4d32df4', '1601565415267-724db0e9fbdf'],
+  ['1574362848149-11496d93a7c7', '1609766857041-ed402ea8069a', '1595576508898-0ad5c879a061', '1502672260266-1c1ef2d93688'],
+  ['1522798514-97ceb8c4f1c8', '1445019980597-93fa8acb246c', '1505693416388-ac5ce068fe85', '1582719478250-c89cae4dc85b'],
+].map((ids) => ids.map(ph));
+
+/** Додає фото демо-готелям у вже існуючій БД (створеній до появи поля photos) */
+async function backfillPhotos(ds: DataSource) {
+  const repo = ds.getRepository(Hotel);
+  for (const [i, h] of HOTELS.entries()) {
+    const hotel = await repo.findOne({ where: { name: h.name } });
+    if (hotel && !hotel.photos?.length) await repo.update(hotel.id, { photos: SEED_PHOTOS[i] });
+  }
+}
+
 export async function seed(ds: DataSource) {
   const log = new Logger('Seed');
   const users = ds.getRepository(User);
-  if ((await users.count()) > 0) return;
+  if ((await users.count()) > 0) return backfillPhotos(ds);
 
   log.log('Порожня БД — створюю демо-дані');
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
@@ -127,6 +153,7 @@ export async function seed(ds: DataSource) {
       hotelRepo.create({
         ...data,
         hue: (i * 37 + 180) % 360,
+        photos: SEED_PHOTOS[i],
         ownerId: i % 3 === 1 ? partner2.id : partner.id,
         rooms: rooms as Room[],
       }),

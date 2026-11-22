@@ -1,6 +1,7 @@
 import { FormEvent, ReactNode, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { isoDate, money, nights, plusDays, qs, SearchHotel } from './api';
+import { Hotel, isoDate, money, nights, plusDays, qs, SearchHotel } from './api';
+import { hotelPhotos, sized } from './photos';
 
 export function Stars({ n }: { n: number }) {
   return (
@@ -40,6 +41,41 @@ export function Cover({ hue, name, className = '' }: { hue: number; name: string
       <span>{initials}</span>
     </div>
   );
+}
+
+/** Фото з плавною появою; якщо не завантажилось — показуємо кольорову заглушку */
+export function Photo({
+  src,
+  hue,
+  name,
+  className = '',
+  alt = '',
+}: {
+  src: string | undefined;
+  hue: number;
+  name: string;
+  className?: string;
+  alt?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  if (!src || failed) return <Cover hue={hue} name={name} className={className} />;
+  return (
+    <div className={`photo ${className}`} style={{ background: `hsl(${hue} 30% 85%)` }}>
+      <img
+        src={src}
+        alt={alt || name}
+        loading="lazy"
+        className={loaded ? 'loaded' : ''}
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
+}
+
+export function HotelPhoto({ h, w = 600, className = '' }: { h: Pick<Hotel, 'id' | 'photos' | 'hue' | 'name'>; w?: number; className?: string }) {
+  return <Photo src={sized(hotelPhotos(h)[0], w)} hue={h.hue} name={h.name} className={className} />;
 }
 
 export interface SearchValues {
@@ -143,7 +179,7 @@ export function HotelCard({
       onMouseEnter={() => onHover?.(h.id)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <Cover hue={h.hue} name={h.name} className="hotel-card-cover" />
+      <HotelPhoto h={h} w={520} className="hotel-card-cover" />
       <div className="hotel-card-body">
         <div className="hotel-card-top">
           <div>

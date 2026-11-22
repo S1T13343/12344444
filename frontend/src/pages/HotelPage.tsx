@@ -1,8 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, fmtDate, Hotel, money, nights, qs, Room, ROOM_TYPES } from '../api';
-import { Cover, defaultSearch, Rating, SearchBar, Spinner, Stars } from '../components';
+import { defaultSearch, Photo, Rating, SearchBar, Spinner, Stars } from '../components';
 import HotelMap from '../HotelMap';
+import { hotelPhotos, roomPhoto, sized } from '../photos';
+
+/** Галерея: велике фото + мініатюри, клік по мініатюрі змінює головне */
+function Gallery({ h }: { h: Hotel }) {
+  const photos = hotelPhotos(h);
+  const [active, setActive] = useState(0);
+  return (
+    <div className="gallery">
+      <Photo src={sized(photos[active], 1200)} hue={h.hue} name={h.name} className="gallery-main" />
+      {photos.length > 1 && (
+        <div className="gallery-thumbs">
+          {photos.map((p, i) => (
+            <button key={p} className={i === active ? 'active' : ''} onClick={() => setActive(i)} aria-label={`Фото ${i + 1}`}>
+              <Photo src={sized(p, 240, 160)} hue={h.hue} name={h.name} className="gallery-thumb" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface HotelDetails extends Hotel {
   rooms: (Room & { available: boolean; fitsGuests: boolean; total: number })[];
@@ -39,7 +60,7 @@ export default function HotelPage() {
         <Link to="/">Головна</Link> / <Link to={`/search?${qs({ city: h.city, checkIn: h.checkIn, checkOut: h.checkOut, guests: s.guests })}`}>{h.city}</Link> / {h.name}
       </div>
       <div className="hotel-hero">
-        <Cover hue={h.hue} name={h.name} className="hotel-hero-cover" />
+        <Gallery h={h} />
         <div className="hotel-hero-info">
           <Stars n={h.stars} />
           <h1>{h.name}</h1>
@@ -73,7 +94,8 @@ export default function HotelPage() {
           const can = r.available && r.fitsGuests;
           return (
             <div key={r.id} className={`room card ${can ? '' : 'disabled'}`}>
-              <div>
+              <Photo src={roomPhoto(r.type, r.id)} hue={h.hue} name={ROOM_TYPES[r.type]} className="room-photo" />
+              <div className="room-info">
                 <h3>
                   {ROOM_TYPES[r.type]} <span className="muted small">№{r.roomNumber}</span>
                 </h3>

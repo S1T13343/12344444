@@ -26,6 +26,7 @@ export interface Hotel {
   lng: number;
   amenities: string[] | null;
   hue: number;
+  photos: string[] | null;
   isActive: boolean;
 }
 

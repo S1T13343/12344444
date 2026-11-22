@@ -49,6 +49,7 @@ export class Hotel {
   @Column({ type: 'float' }) lng!: number;
   @Column({ type: 'simple-json', nullable: true }) amenities!: string[] | null;
   @Column({ type: 'int', default: 200 }) hue!: number; // колір обкладинки-заглушки
+  @Column({ type: 'simple-json', nullable: true }) photos!: string[] | null; // URL фотографій, перше — обкладинка
   @Column({ type: 'boolean', default: true }) isActive!: boolean;
   @CreateDateColumn() createdAt!: Date;
 

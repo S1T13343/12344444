@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, Booking, fmtDate, money, nights, qs, ROOM_TYPES, STATUS } from '../api';
-import { Cover, Empty, Spinner } from '../components';
+import { Empty, HotelPhoto, Spinner } from '../components';
 import { useApp } from '../context';
 
 interface Ticket {
@@ -85,7 +85,7 @@ export default function MyBookingsPage() {
           )}
           {shown.map((b) => (
             <div key={b.id} className="booking card">
-              <Cover hue={b.room.hotel.hue} name={b.room.hotel.name} className="booking-cover" />
+              <HotelPhoto h={b.room.hotel} w={360} className="booking-cover" />
               <div className="booking-body">
                 <div className="section-head">
                   <div>
