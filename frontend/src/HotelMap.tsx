@@ -80,7 +80,8 @@ function LeafletHotelMap({ points, activeId, height = 420, zoom = 6 }: Props) {
       <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }} scrollWheelZoom>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          referrerPolicy="strict-origin-when-cross-origin" // OSM вимагає Referer, інакше 403
         />
         <FitBounds points={points} />
         {points.map((p) => (

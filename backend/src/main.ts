@@ -12,7 +12,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   // CSP вимкнено: сайт вантажить тайли OpenStreetMap, Stripe.js і Google Maps із зовнішніх доменів
-  app.use(helmet({ contentSecurityPolicy: false }));
+  // Referrer-Policy: OpenStreetMap блокує тайли (403) для запитів без заголовка Referer,
+  // а helmet за замовчуванням ставить no-referrer — тому явно дозволяємо origin.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    }),
+  );
   app.enableCors({ origin: process.env.CORS_ORIGIN?.split(',') ?? true });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
