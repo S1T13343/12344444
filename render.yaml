@@ -1,0 +1,57 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Один веб-сервіс (API + зібраний сайт), PostgreSQL і Redis (Key Value) — усе на безкоштовних тарифах.
+services:
+  - type: web
+    name: staybook
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: >-
+      cd frontend && npm ci --include=dev && npm run build &&
+      cd ../backend && npm ci --include=dev && npm run build
+    startCommand: cd backend && node dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COMMISSION_PERCENT
+        value: "10"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: staybook-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: staybook-cache
+          property: connectionString
+      # Необов'язкові ключі — задайте в Dashboard → Environment, якщо потрібні
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+
+  - type: keyvalue
+    name: staybook-cache
+    plan: free
+    region: frankfurt
+    ipAllowList: [] # доступ лише з внутрішньої мережі Render
+
+databases:
+  - name: staybook-db
+    plan: free
+    region: frankfurt
+    databaseName: staybook
+    user: staybook
